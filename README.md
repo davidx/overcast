@@ -6,8 +6,7 @@ DISCLAIMER: this is experimental and may not work for you, please file a ticket 
 
 ## Usage:
 
-- edit config/cloud.yml
-- create an AWS security group for each profile defined in the configuration
-- 
-<pre> cap overcast:deploy
+- Edit config/cloud.yml to your liking.
+- Create an AWS security group for the group defined in the configuration
+<pre>cap overcast:deploy
 cap overcast:runsolo PROFILE=app</pre>
