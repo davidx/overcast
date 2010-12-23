@@ -13,12 +13,14 @@ require 'yaml'
 default_run_options[:pty]   = true
 ssh_options[:user]          = 'root'
 ssh_options[:forward_agent] = true
+ssh_options[:identify_file] = File.dirname(__FILE__) + '/keys'
 
 set :dataroot, "/data/ops"
 set :chefroot, "/data/ops/current/chef"
 set :repository, "git@github.com:davidx/overcast.git"
 set :timestamp, Time.now.strftime("%s")
 set :release_path, "#{dataroot}/releases/#{timestamp}"
+
 set :bootstrap_packages, %w[
                               dev-vcs/git
                               dev-lang/ruby
@@ -38,11 +40,12 @@ namespace :overcast do
   task :bootstrap do
     run "emerge --sync"
     run "emerge portage"
+    run "etc-update"
     run "emerge #{bootstrap_packages.join(' ')}"
     run "gem install #{bootstrap_gems.join(' ')} --no-ri --no-rdoc"
     run "rvm-install"
     # run "echo '[[ -s $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm' >> ~/.bashrc"
-    #  this is to bypass the git@github.com ssh yes/no question, todo add not_if
+    #  this is to bypass the git@github.com ssh yes/no question, todo add not_if or echo "y\r\n"
     run "su - -c \"echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config\" "
   end
 
@@ -58,13 +61,16 @@ namespace :overcast do
     update
     solo
   end
+  def run_commands(commands)
+    commands.collect{|c| "echo [command:][#{c}] && echo [result:][#{`#{c}`}]" }.join(" && ")
+  end
   task :solo do
     profile  = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
 
     commands = ["cd #{chefroot}"]
-    commands << "bundle install"
+    commands << "gem install bundler --no-ri --no-rdoc && bundle install"
     commands << "rake chef:runsolo PROFILE=#{profile}"
-    run commands.join(" && ")
+    run_commands commands
   end
   task :update do
     git_command = ENV['branch'] ? "git checkout #{ENV['branch']} && git pull" : "git pull"
