@@ -1,0 +1,16 @@
+:defaults:
+  :availability_zone: us-east-1d
+  :key_name: gsg-keypair 
+:profiles:
+  :default:
+    :groups:
+      - default 
+    :roles:
+      - base
+  :app:
+    :image_id: ami-6e2eca07
+    :flavor_id: m1.small
+    :groups:
+      - app
+    :roles:
+      - app
