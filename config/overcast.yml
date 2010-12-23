@@ -1,0 +1,43 @@
+:defaults:
+  :image_id: ami-6e2eca07
+  :flavor_id: m1.small
+  :availability_zone: us-east-1d
+  :key_name: gsg-keypair 
+:profiles:
+  :default:
+    :groups:
+      - default 
+    :roles:
+      - base
+  :app:
+    :image_id: ami-6e2eca07
+    :flavor_id: m1.small
+    :groups:
+      - app
+    :roles:
+      - base
+      - app
+:system_profiles:
+  :defaults:
+    - app-admin/syslog-ng
+    - app-arch/unzip
+    - app-crypt/gnupg
+    - app-editors/vim
+    - app-misc/screen
+    - app-portage/gentoolkit
+    - dev-java/sun-jre-bin
+    - dev-lang/ruby-enterprise
+    - virtual/rubygems
+    - dev-python/bsddb3
+    - dev-util/lafilefixer
+    - net-misc/dhcpcd
+    - sys-devel/libtool
+    - sys-libs/e2fsprogs-libs
+    - sys-process/vixie-cron
+    - virtual/jdk
+    - virtual/jre
+    - www-servers/apache
+
+  :gentoo32bitAMI:
+    :packages:
+
