@@ -8,7 +8,7 @@ DISCLAIMER: this is experimental, subject to major refactoring and API changes a
 
 - Edit config/overcast.yml to your liking.
 Put in a minimum of something like this:
-<code>
+<pre>
 :defaults:
   :image_id: ami-6e2eca07
   :flavor_id: m1.small
@@ -28,7 +28,7 @@ Put in a minimum of something like this:
     :roles:
       - base
       - app
-</code>
+</pre>
 - Create an AWS security group for the group defined in the configuration
 - Deploy the code
 <pre>cap overcast:deploy</pre>
