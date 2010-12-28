@@ -26,25 +26,25 @@
       - testapp
 :system_profiles:
   :defaults:
-    - app-admin/syslog-ng
-    - app-arch/unzip
-    - app-crypt/gnupg
-    - app-editors/vim
-    - app-misc/screen
-    - app-portage/gentoolkit
-    - dev-java/sun-jre-bin
-    - dev-lang/ruby-enterprise
-    - virtual/rubygems
-    - dev-python/bsddb3
-    - dev-util/lafilefixer
-    - net-misc/dhcpcd
-    - sys-devel/libtool
-    - sys-libs/e2fsprogs-libs
-    - sys-process/vixie-cron
-    - virtual/jdk
-    - virtual/jre
-    - www-servers/apache
-
+    :packages:
+      - app-admin/syslog-ng
+      - app-arch/unzip
+      - app-crypt/gnupg
+      - app-editors/vim
+      - app-misc/screen
+      - app-portage/gentoolkit
+      - dev-java/sun-jre-bin
+      - dev-lang/ruby-enterprise
+      - virtual/rubygems
+      - dev-python/bsddb3
+      - dev-util/lafilefixer
+      - net-misc/dhcpcd
+      - sys-devel/libtool
+      - sys-libs/e2fsprogs-libs
+      - sys-process/vixie-cron
+      - virtual/jdk
+      - virtual/jre
+      - www-servers/apach
   :gentoo32bitAMI:
     :packages:
 
