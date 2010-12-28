@@ -1,6 +1,7 @@
 $:.unshift(File.dirname(__FILE__) + '/lib')
 
-require 'data_provider'
+require 'overcast/data_provider'
+require 'overcast/configuration'
 
 
 groups.each { |group|
@@ -21,36 +22,34 @@ set :repository, "git@github.com:davidx/overcast.git"
 set :timestamp, Time.now.strftime("%s")
 set :release_path, "#{dataroot}/releases/#{timestamp}"
 
-set :bootstrap_packages, %w[
-                              dev-vcs/git
-                              dev-lang/ruby
-                              rubygems
-                          ]
-set :bootstrap_gems, %w[
-                              rake
-                              ohai
-                              chef
-                              choice
-                              rvm
-                              bundler
-                          ]
+
+
+def emerge(packages=[])
+  run "emerge #{packages.join(" ")}"
+end
+
+def gem_install(gems=[])
+  run "gem install #{gems.join(' ')} --no-ri --no-rdoc"
+end
+
+
+  def run_commands(commands)
+    commands.each{ |c| "echo [command:][#{c}] && echo [result:][#{`#{c}`}]" }.join(" && ")
+  end
 
 namespace :overcast do
-
   task :bootstrap do
-    run "emerge --sync"
-    run "emerge portage"
-    run "etc-update"
-    run "emerge #{bootstrap_packages.join(' ')}"
-    run "gem install #{bootstrap_gems.join(' ')} --no-ri --no-rdoc"
-    run "rvm-install"
-    # run "echo '[[ -s $HOME/.rvm/scripts/rvm ]] && source $HOME/.rvm/scripts/rvm' >> ~/.bashrc"
-    #  this is to bypass the git@github.com ssh yes/no question, todo add not_if or echo "y\r\n"
+    run_commands bootstrap_commands
+    emerge bootstrap_packages
+    gem_install bootstrap_gems
+    strict_host_key_prehack
+  end
+  task :strict_host_key_prehack do
+    # initial alter to allow git repo pull after which ssh_config is rendered from recipe
     run "su - -c \"echo 'StrictHostKeyChecking no' >> /etc/ssh/ssh_config\" "
   end
 
-
-  task :deploy, :role => :app do
+  task :deploy do
     cmd = ["mkdir -p #{dataroot}/releases"]
     cmd << "cd #{dataroot} && git clone #{repository} #{release_path}"
     cmd << "rm -f #{dataroot}/current"
@@ -61,9 +60,8 @@ namespace :overcast do
     update
     solo
   end
-  def run_commands(commands)
-    commands.collect{|c| "echo [command:][#{c}] && echo [result:][#{`#{c}`}]" }.join(" && ")
-  end
+
+
   task :solo do
     profile  = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
 
@@ -77,7 +75,7 @@ namespace :overcast do
     run "cd #{chefroot} && #{git_command}"
   end
   task :grow do
-    profile  = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
+    profile = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
     system "ruby bin/grow.rb --profile=#{profile}"
   end
 end

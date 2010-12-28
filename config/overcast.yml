@@ -1,8 +1,8 @@
 :defaults:
   :image_id: ami-6e2eca07
   :flavor_id: m1.small
-  :availability_zone: us-east-1d
-  :key_name: gsg-keypair 
+  :availability_zone: us-east-1a
+  :key_name: bootstrap_hostkey
 :profiles:
   :default:
     :groups:
@@ -17,6 +17,13 @@
     :roles:
       - base
       - app
+  :tester:
+    :image_id: ami-6e2eca07
+    :flavor_id: m1.small
+    :groups:
+      - default
+    :roles:
+      - testapp
 :system_profiles:
   :defaults:
     - app-admin/syslog-ng

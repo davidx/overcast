@@ -3,49 +3,56 @@ require 'yaml'
 require 'AWS'
 require 'fog'
 
-
+$:.unshift(__FILE__)
+require 'overcast/configuration'
+Credentials = Overcast::Configuration.credentials
 
 module Overcast
   module DataProvider
-    module AWS
-      class Fog
-        def connection
-          Fog::AWS::Compute.new(Credentials[:default])
-        end
+    class Ec2
+      attr_reader :connection
+
+      def connection
+        Fog::AWS::Compute.new(Credentials["default"])
+      end
+    end
+
+    class RDS
+      attr_reader :connection
+
+      def connection
+        AWS::RDS::Base.new(Overcast::Configuration.credentials["default"])
       end
 
-      class RDS
-        def connection
-          AWS::RDS::Base.new(Credentials[:default])
+      def db_instances(db_name)
+        hash_path = ['DescribeDBInstancesResult']['DBInstances']['DBInstance']
+        instances = connection.describe_db_instances.send(hash_path).collect do |instance|
+          instance if instance['DBName'] == db_name
         end
+        instances
+      end
 
-        def db_instances(db_name)
-          hash_path = ['DescribeDBInstancesResult']['DBInstances']['DBInstance']
-          instances = connection.describe_db_instances.send(hash_path).collect do |instance|
-            instance if instance['DBName'] == db_name
-          end
-          instances
-        end
-        def masters(db_name)
-          db_instances(db_name).collect do|instance| 
-            instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'master'
-          end.compact
-        end
-        def readslaves(db_name)
-          db_instances(db_name).collect do|instance|
-            instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'readslave'
-          end.compact
-        end
+      def masters(db_name)
+        db_instances(db_name).collect do |instance|
+          instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'master'
+        end.compact
+      end
+
+      def readslaves(db_name)
+        db_instances(db_name).collect do |instance|
+          instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'readslave'
+        end.compact
       end
     end
   end
 end
 
 
-db_instances = Overcast::DataProvider::RDS.db_instances
-RDS          = prepare_rds_data(db_instances)
-print RDS.inspect if ENV.key?('DEBUG')
-
+FOG = Fog::AWS::Compute.new(Credentials[:default])
+RDS = {} || AWS::RDS::Base.new(
+    :access_key_id     => Credentials[:default][:aws_access_key_id],
+    :secret_access_key => Credentials[:default][:aws_secret_access_key]
+)
 
 def rds_masters(db_name)
   db = RDS[db_name.to_s]
@@ -58,18 +65,18 @@ def rds_slaves(db_name)
 end
 
 def role_servers(role_name)
-  instances = EC2.servers.collect { |s|
+  instances = FOG.servers.collect { |s|
     s.dns_name if s.groups.include?(role_name.to_s) and s.state == 'running' }.compact
   instances.kind_of?(Array) ? instances : []
 end
 
 def ec2_servers(role_name)
-  instances = EC2.servers.collect { |s|
+  instances = FOG.servers.collect { |s|
     {:name => s.dns_name, :ip => s.private_ip_address} if s.groups.include?(role_name.to_s) and s.state == 'running'
   }
   instances.kind_of?(Array) ? instances.compact : []
 end
 
 def groups
-  EC2.describe_security_groups.body['securityGroupInfo'].collect { |g| g['groupName'] }
+  FOG.describe_security_groups.body['securityGroupInfo'].collect { |g| g['groupName'] }.compact
 end
