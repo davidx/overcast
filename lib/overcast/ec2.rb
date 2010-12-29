@@ -10,11 +10,7 @@ module Overcast
       out << "Public IP Address: #{server.ip_address}"
       out << "Private IP Address: #{server.private_ip_address}"
       out << "key is #{key_name}"
-      out << 'sleeping 60 to let it boot up properly'
-      print out.join("\n")
-      sleep 60
-      #TODO probe tcp in loop until ssh service has completed booting
-      print server.to_yaml
+      print server.to_yaml if ENV['DEBUG']
       server
     end
   end

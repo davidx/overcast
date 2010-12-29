@@ -31,16 +31,15 @@ module Overcast
         end
         instances
       end
-
       def masters(db_name)
-        db_instances(db_name).collect do |instance|
-          instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'master'
-        end.compact
+        servers_for_replication_role(db_nme,:master)
       end
-
-      def readslaves(db_name)
-        db_instances(db_name).collect do |instance|
-          instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == 'readslave'
+      def read_slaves(db_name)
+        servers_for_replication_role(db_nme,:master)
+      end
+      def servers_for_replication_role(db_name, replication_role)
+        db_instances(db_name.to_s).collect do |instance|
+          instance['Endpoint']['Address'] if instance['DBInstanceIdentifier'] == replication_role.to_s
         end.compact
       end
     end

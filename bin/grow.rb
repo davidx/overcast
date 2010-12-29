@@ -10,11 +10,11 @@ $:.unshift(File.dirname(__FILE__) + '/../lib')
 require 'overcast/configuration'
 require 'overcast/data_provider'
 
-main_config= Overcast::Configuration.read
+main_config = Overcast::Configuration.read
 
 credentials = Overcast::Configuration.credentials
-EC2 = Overcast::DataProvider::Ec2
-RDS = Overcast::DataProvider::RDS
+EC2         = Overcast::DataProvider::Ec2
+RDS         = Overcast::DataProvider::RDS
 
 Choice.options do
   header ''
@@ -43,21 +43,22 @@ end
 choices = Choice.choices
 
 
-server = Overcast::Ec2.launch_instance(
-                    Overcast::Configuration.get_config_for_profile(choices[:profile])
-        )
+server  = Overcast::Ec2.launch_instance(
+    Overcast::Configuration.get_config_for_profile(choices[:profile])
+)
 
 
 Overcast.bootstrap_server_instance(server)
 
 
-Net::SSH.start( server.ip_address, 'root',
-                :forward_agent =>true,
-                :keys =>["#{ENV['HOME']}/.ec2/#{choices[:key_name]}"] ) do |session|
+Net::SSH.start(
+    server.ip_address, 'root',
+    :forward_agent =>true, :keys =>["#{ENV['HOME']}/.ec2/#{choices[:key_name]}"]
+) do |session|
 
   shell = session.shell.sync
 
-  out = shell.pwd
+  out   = shell.pwd
   p out.stdout
 
   out = shell.uptime
