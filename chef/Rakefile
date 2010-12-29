@@ -23,17 +23,17 @@ task :default => [:test]
 namespace :chef do
 
   task :runsolo do
-    chefroot = TOPDIR
-    main_config = YAML.load(IO.read(TOPDIR + '/../config/cloud.yml'))
-    profile = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
-    roles = main_config[:profiles][profile.to_sym][:roles]
-    roles_list = roles.collect { |role| "role[#{role}]" }
+    chefroot            = TOPDIR
+    main_config         = YAML.load(IO.read(TOPDIR + '/../config/cloud.yml'))
+    profile             = ENV.key?('PROFILE') ? ENV['PROFILE'] : 'default'
+    roles               = main_config[:profiles][profile.to_sym][:roles]
+    roles_list          = roles.collect { |role| "role[#{role}]" }
     profile_config_file = "#{chefroot}/config/_#{profile}.json"
-    profile_config = { "run_list" => roles_list }.to_json
+    profile_config      = {"run_list" => roles_list}.to_json
     File.open(profile_config_file, "w+") do |f|
-        f.syswrite(profile_config)
+      f.syswrite(profile_config)
     end
-   
+
     system "cd #{chefroot} && chef-solo -j #{profile_config_file} -c #{chefroot}/config/solo.rb"
   end
   task :update do

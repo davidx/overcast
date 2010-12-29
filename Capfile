@@ -23,7 +23,6 @@ set :timestamp, Time.now.strftime("%s")
 set :release_path, "#{dataroot}/releases/#{timestamp}"
 
 
-
 def emerge(packages=[])
   run "emerge #{packages.join(" ")}"
 end
@@ -33,9 +32,9 @@ def gem_install(gems=[])
 end
 
 
-  def run_commands(commands)
-    commands.each{ |c| "echo [command:][#{c}] && echo [result:][#{`#{c}`}]" }.join(" && ")
-  end
+def run_commands(commands)
+  commands.each { |c| "echo [command:][#{c}] && echo [result:][#{`#{c}`}]" }.join(" && ")
+end
 
 namespace :overcast do
   task :bootstrap do
